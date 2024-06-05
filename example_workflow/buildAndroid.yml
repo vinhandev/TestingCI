@@ -1,0 +1,75 @@
+name: Build Android
+
+on:
+  push:
+    branches:
+      - 'release-android-v*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      #      - name: Cache dependencies TODO
+      #        uses: actions/cache@v2
+      #        with:
+      #          path: ~/.yarn
+      #          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+      #          restore-keys: |
+      #            ${{ runner.os }}-yarn-
+
+      - run: rm -rf yarn.lock
+
+      - name: Install Dependencies
+        #        if: steps.cache.outputs.cache-hit != 'true' TODO
+        run: yarn install
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Bundle android
+        run: yarn bundle:android
+
+      - name: Setup fastlane
+        run: |
+          cd android
+          bundle install
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Change wrapper permissions
+        run: |
+          cd android
+          chmod +x ./gradlew
+
+      - name: Decode Service Account Key JSON File
+        uses: timheuer/base64-to-file@v1
+        id: service_account_json_file
+        with:
+          fileName: 'serviceAccount.json'
+          encodedString: ${{ secrets.GPLAY_SERVICE_ACCOUNT_KEY_JSON }}
+
+      - name: Decode Keystore File
+        uses: timheuer/base64-to-file@v1
+        id: android_keystore
+        with:
+          fileName: 'android_keystore.keystore'
+          encodedString: ${{ secrets.KEYSTORE_FILE }}
+
+      # Release to Android Store Internal
+      - name: Release to Android Store Internal
+        run: |
+          cd android
+          bundle exec fastlane android internal_action
+        env:
+          KEYSTORE_FILE: ${{ steps.android_keystore.outputs.filePath }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS}}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          ANDROID_JSON_KEY_FILE: ${{ steps.service_account_json_file.outputs.filePath }}
