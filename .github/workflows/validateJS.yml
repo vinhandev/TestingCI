@@ -58,7 +58,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Run ESLint
-        run: yarn lint -f @jamesacarr/github-actions
+        run: yarn lint
 
       - name: Run ESLint with auto-fix
         run: yarn lint --fix
