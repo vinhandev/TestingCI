@@ -10,9 +10,6 @@ jobs:
   compile:
     name: Compile JS (tsc)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./
     steps:
       - uses: actions/checkout@v4
 
@@ -51,9 +48,6 @@ jobs:
   lint:
     name: Lint JS (eslint, prettier)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./
     steps:
       - uses: actions/checkout@v4
 
