@@ -11,7 +11,7 @@ import {Text, View} from 'react-native';
 function App(): React.JSX.Element {
   return (
     <View>
-      <Text>CICD</Text>
+      <Text>CICD ne`</Text>
     </View>
   );
 }
